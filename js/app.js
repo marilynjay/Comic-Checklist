@@ -50,10 +50,13 @@ function toast(msg) {
   toastTimer = setTimeout(() => { el.toast.hidden = true; }, 2600);
 }
 
-function confirmDialog(title, text, okLabel = 'Delete') {
+function confirmDialog(title, text, { ok = 'Delete', cancel = 'Keep it', danger = true } = {}) {
   $('confirm-title').textContent = title;
   $('confirm-text').textContent = text;
-  $('btn-confirm-yes').textContent = okLabel;
+  $('btn-confirm-yes').textContent = ok;
+  $('btn-confirm-no').textContent = cancel;
+  $('btn-confirm-yes').classList.toggle('btn-danger', danger);
+  $('btn-confirm-yes').classList.toggle('btn-solid', !danger);
   const dlg = $('dlg-confirm');
   dlg.showModal();
   return new Promise(resolve => {
@@ -428,7 +431,46 @@ $('btn-page-close').addEventListener('click', () => dlgPage.close());
 /* ---------------- comic options ---------------- */
 
 const dlgComicMenu = $('dlg-comic-menu');
-$('btn-comic-menu').addEventListener('click', () => dlgComicMenu.showModal());
+$('btn-comic-menu').addEventListener('click', () => {
+  const comic = getComic(openComicId);
+  if (!comic) return;
+  // The same slot flips to an undo, so a mis-tap doesn't mean re-checking
+  // every box by hand.
+  const done = comicStats(comic).complete;
+  $('btn-mark-all').hidden = comic.pages.length === 0;
+  $('mark-all-label').textContent = done ? 'Clear every checkmark' : 'Mark every page finished';
+  $('mark-all-hint').textContent = done
+    ? 'Start this comic over from nothing'
+    : 'For a comic you finished before you started tracking';
+  $('btn-mark-all').classList.toggle('danger', done);
+  dlgComicMenu.showModal();
+});
+
+$('btn-mark-all').addEventListener('click', async () => {
+  const comic = getComic(openComicId);
+  if (!comic) return;
+  const done = comicStats(comic).complete;
+  dlgComicMenu.close();
+
+  const yes = await confirmDialog(
+    done ? `Clear “${comic.title}”?` : `Mark “${comic.title}” finished?`,
+    done
+      ? `Every checkmark on all ${plural(comic.pages.length, 'page', 'pages')} will be cleared. Photos stay.`
+      : `All five steps on all ${plural(comic.pages.length, 'page', 'pages')} will be ticked off.`,
+    { ok: done ? 'Clear it' : 'Mark it done', cancel: 'Cancel', danger: done },
+  );
+  if (!yes) return;
+
+  for (const page of comic.pages) {
+    for (const t of TASKS) page.tasks[t.key] = !done;
+  }
+  save();
+  renderComic();
+  if (!done) {
+    fx.comicComplete();
+    toast(`“${comic.title}” is finished!`);
+  }
+});
 $('btn-comic-menu-close').addEventListener('click', () => dlgComicMenu.close());
 $('btn-rename').addEventListener('click', () => { dlgComicMenu.close(); openComicDialog('rename'); });
 $('btn-add-many').addEventListener('click', () => { dlgComicMenu.close(); openComicDialog('addpages'); });
@@ -472,7 +514,7 @@ $('in-import').addEventListener('change', async ev => {
   const yes = await confirmDialog(
     'Restore this backup?',
     'Everything currently on this device will be replaced by the contents of the file.',
-    'Restore',
+    { ok: 'Restore', cancel: 'Cancel' },
   );
   if (!yes) return;
   try {
