@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f4eddf">
+<title>Comic Checklist</title>
+<meta name="description" content="Track pencils, word bubbles, lineart, colors and backgrounds across every page of every comic.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Patrick+Hand&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📓</text></svg>">
+</head>
+<body>
+
+<div id="fx-layer" aria-hidden="true"><canvas id="fx-canvas"></canvas></div>
+
+<!-- ============ HOME ============ -->
+<main id="view-home" class="view">
+  <header class="app-head">
+    <h1 class="app-title">Comic&nbsp;Checklist</h1>
+    <button class="icon-btn" id="btn-menu" aria-label="Backup and settings" aria-haspopup="dialog">
+      <svg viewBox="0 0 24 24" class="ico"><circle cx="12" cy="5" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="12" cy="19" r="1.7"/></svg>
+    </button>
+  </header>
+
+  <section class="story-panel" id="story-panel">
+    <div class="story-top">
+      <h2 class="story-label">The whole story</h2>
+      <span class="story-pct-big" id="story-pct">0%</span>
+    </div>
+    <div class="shelf" id="shelf" role="list" aria-label="Every comic in the story"></div>
+    <p class="story-sub" id="story-sub">No comics yet — start your first one.</p>
+    <button class="link-btn" id="btn-story-goal">Story length: <span id="story-goal-text">10 comics</span></button>
+  </section>
+
+  <ul class="comic-list" id="comic-list"></ul>
+
+  <div class="blank-state" id="empty-home" hidden>
+    <div class="empty-art" aria-hidden="true">
+      <svg viewBox="0 0 120 90"><rect x="8" y="8" width="104" height="74" rx="4"/><path d="M8 26h104M40 26v56M76 26v56"/></svg>
+    </div>
+    <p class="empty-title">Nothing on the drawing board</p>
+    <p class="empty-text">Tap&nbsp;<strong>+</strong>&nbsp;to add your first comic and tell it how many pages you're planning.</p>
+  </div>
+
+  <div class="spacer-fab"></div>
+  <button class="fab" id="btn-add-comic" aria-label="New comic">
+    <svg viewBox="0 0 24 24" class="ico"><path d="M12 5v14M5 12h14"/></svg>
+  </button>
+</main>
+
+<!-- ============ COMIC ============ -->
+<main id="view-comic" class="view" hidden>
+  <header class="app-head">
+    <button class="icon-btn" id="btn-back" aria-label="Back to all comics">
+      <svg viewBox="0 0 24 24" class="ico"><path d="M15 5l-7 7 7 7"/></svg>
+    </button>
+    <h1 class="app-title comic-title" id="comic-title">Comic</h1>
+    <button class="icon-btn" id="btn-comic-menu" aria-label="Comic options" aria-haspopup="dialog">
+      <svg viewBox="0 0 24 24" class="ico"><circle cx="12" cy="5" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="12" cy="19" r="1.7"/></svg>
+    </button>
+  </header>
+
+  <section class="comic-summary">
+    <div class="story-bar" id="comic-bar-wrap">
+      <div class="story-bar-fill" id="comic-bar-fill"></div>
+      <span class="story-bar-pct" id="comic-pct">0%</span>
+    </div>
+    <p class="story-sub" id="comic-sub"></p>
+  </section>
+
+  <div class="legend" id="legend"></div>
+
+  <ul class="page-list" id="page-list"></ul>
+
+  <button class="add-page-btn" id="btn-add-page">
+    <svg viewBox="0 0 24 24" class="ico"><path d="M12 5v14M5 12h14"/></svg>
+    <span>Add a page</span>
+  </button>
+  <div class="spacer-fab"></div>
+</main>
+
+<!-- ============ DIALOGS ============ -->
+<dialog id="dlg-comic" class="sheet">
+  <form method="dialog" id="form-comic">
+    <h2 class="sheet-title" id="dlg-comic-title">New comic</h2>
+    <label class="field">
+      <span class="field-label">Title</span>
+      <input type="text" id="in-title" maxlength="60" placeholder="e.g. Book One: The Long Walk" autocomplete="off">
+    </label>
+    <label class="field" id="field-pages">
+      <span class="field-label">How many pages?</span>
+      <input type="number" id="in-pages" min="1" max="200" value="12" inputmode="numeric">
+      <span class="field-hint">You can always add more later.</span>
+    </label>
+    <div class="sheet-actions">
+      <button value="cancel" class="btn btn-quiet" type="submit">Cancel</button>
+      <button value="ok" class="btn btn-solid" type="submit" id="btn-comic-save">Create</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="dlg-menu" class="sheet">
+  <h2 class="sheet-title">Your data</h2>
+  <p class="sheet-note">Everything lives on this device only. Export a backup now and then — especially before clearing your browser.</p>
+  <div class="menu-list">
+    <button class="menu-item" id="btn-export">
+      <svg viewBox="0 0 24 24" class="ico"><path d="M12 4v11M8 11l4 4 4-4M5 20h14"/></svg>
+      <span><strong>Export backup</strong><small>Downloads a file with all progress &amp; thumbnails</small></span>
+    </button>
+    <button class="menu-item" id="btn-import">
+      <svg viewBox="0 0 24 24" class="ico"><path d="M12 15V4M8 8l4-4 4 4M5 20h14"/></svg>
+      <span><strong>Restore from backup</strong><small>Replaces everything currently on this device</small></span>
+    </button>
+    <button class="menu-item" id="btn-motion">
+      <svg viewBox="0 0 24 24" class="ico"><path d="M5 12h3l2-5 3 10 2-5h4"/></svg>
+      <span><strong>Celebrations: <em id="motion-state">on</em></strong><small>Turn the bursts and confetti off</small></span>
+    </button>
+  </div>
+  <div class="sheet-actions">
+    <button class="btn btn-quiet" id="btn-menu-close">Done</button>
+  </div>
+  <input type="file" id="in-import" accept="application/json,.json" hidden>
+</dialog>
+
+<dialog id="dlg-comic-menu" class="sheet">
+  <h2 class="sheet-title">Comic options</h2>
+  <div class="menu-list">
+    <button class="menu-item" id="btn-rename">
+      <svg viewBox="0 0 24 24" class="ico"><path d="M4 20h4l10-10-4-4L4 16v4zM14 6l4 4"/></svg>
+      <span><strong>Rename</strong></span>
+    </button>
+    <button class="menu-item" id="btn-add-many">
+      <svg viewBox="0 0 24 24" class="ico"><path d="M12 5v14M5 12h14"/></svg>
+      <span><strong>Add several pages</strong></span>
+    </button>
+    <button class="menu-item danger" id="btn-delete-comic">
+      <svg viewBox="0 0 24 24" class="ico"><path d="M5 7h14M10 7V5h4v2M6 7l1 13h10l1-13"/></svg>
+      <span><strong>Delete this comic</strong></span>
+    </button>
+  </div>
+  <div class="sheet-actions">
+    <button class="btn btn-quiet" id="btn-comic-menu-close">Done</button>
+  </div>
+</dialog>
+
+<dialog id="dlg-page" class="sheet">
+  <h2 class="sheet-title" id="dlg-page-title">Page</h2>
+  <div class="thumb-preview" id="thumb-preview"></div>
+  <div class="menu-list">
+    <button class="menu-item" id="btn-pick-image">
+      <svg viewBox="0 0 24 24" class="ico"><rect x="4" y="5" width="16" height="14" rx="2"/><circle cx="9" cy="10" r="1.5"/><path d="M5 17l5-5 4 4 2-2 3 3"/></svg>
+      <span><strong id="pick-image-label">Add a photo of this page</strong><small>Optional — snap it right off your desk</small></span>
+    </button>
+    <button class="menu-item" id="btn-remove-image" hidden>
+      <svg viewBox="0 0 24 24" class="ico"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      <span><strong>Remove photo</strong></span>
+    </button>
+    <button class="menu-item danger" id="btn-delete-page">
+      <svg viewBox="0 0 24 24" class="ico"><path d="M5 7h14M10 7V5h4v2M6 7l1 13h10l1-13"/></svg>
+      <span><strong>Delete this page</strong></span>
+    </button>
+  </div>
+  <div class="sheet-actions">
+    <button class="btn btn-quiet" id="btn-page-close">Done</button>
+  </div>
+  <input type="file" id="in-image" accept="image/*" hidden>
+</dialog>
+
+<dialog id="dlg-confirm" class="sheet">
+  <h2 class="sheet-title" id="confirm-title">Are you sure?</h2>
+  <p class="sheet-note" id="confirm-text"></p>
+  <div class="sheet-actions">
+    <button class="btn btn-quiet" id="btn-confirm-no">Keep it</button>
+    <button class="btn btn-danger" id="btn-confirm-yes">Delete</button>
+  </div>
+</dialog>
+
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
