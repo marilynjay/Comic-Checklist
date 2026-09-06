@@ -535,7 +535,7 @@ dialog.sheet[open] { animation: sheet-in .2s ease; }
   text-shadow:
     2px 0 0 #17140f, -2px 0 0 #17140f, 0 2px 0 #17140f, 0 -2px 0 #17140f,
     2px 2px 0 #17140f, -2px 2px 0 #17140f, 2px -2px 0 #17140f, -2px -2px 0 #17140f,
-    5px 7px 0 rgba(23,20,15,.45);
+    4px 5px 0 rgba(23,20,15,.5);
   transform: translate(-50%, -50%) rotate(var(--rot, -8deg));
   animation: shout-pop .95s cubic-bezier(.16,1.2,.3,1) forwards;
 }
@@ -556,11 +556,137 @@ dialog.sheet[open] { animation: sheet-in .2s ease; }
   border-radius: 50%;
   background-image: radial-gradient(var(--dot, var(--pop-red)) 32%, transparent 34%);
   background-size: 9px 9px;
-  animation: halftone-out .7s ease-out forwards;
+  animation: halftone-out .75s ease-out forwards;
 }
 @keyframes halftone-out {
-  0%   { opacity: .85; transform: scale(.2); }
-  100% { opacity: 0;   transform: scale(11); }
+  0%   { opacity: .9; transform: scale(.2); }
+  100% { opacity: 0;  transform: scale(calc(11 * var(--ht-scale, 1))); }
+}
+
+/* shockwave ring — the impact of a tap */
+.fx-ring {
+  position: fixed;
+  z-index: 51;
+  pointer-events: none;
+  width: var(--ring-size, 120px); height: var(--ring-size, 120px);
+  margin-left: calc(var(--ring-size, 120px) / -2);
+  margin-top: calc(var(--ring-size, 120px) / -2);
+  border: var(--ring-width, 4px) solid var(--ring-color, var(--pop-yellow));
+  border-radius: 50%;
+  animation: ring-out .62s cubic-bezier(.15,.75,.35,1) forwards;
+}
+@keyframes ring-out {
+  0%   { opacity: .95; transform: scale(.05); }
+  65%  { opacity: .4; }
+  100% { opacity: 0;   transform: scale(1); }
+}
+
+/* the cell-by-cell run down a finished column */
+.task-btn.cell-pulse {
+  animation: cell-pulse .52s cubic-bezier(.2,1.5,.4,1);
+  z-index: 2;
+}
+@keyframes cell-pulse {
+  0%   { transform: scale(1); }
+  35%  { transform: scale(1.38) rotate(-7deg);
+         box-shadow: 0 0 0 9px color-mix(in srgb, var(--tc) 32%, transparent); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 transparent; }
+}
+
+/* ---------- column fanfare: a few seconds of full screen ---------- */
+.fanfare {
+  position: fixed; inset: 0;
+  /* below #fx-layer on purpose, so the confetti storm falls in FRONT of it */
+  z-index: 48;
+  pointer-events: none;
+  display: grid; place-items: center;
+  overflow: hidden;
+  backdrop-filter: blur(2.5px);
+  -webkit-backdrop-filter: blur(2.5px);
+  animation: fanfare-in .4s ease, fanfare-out .75s ease 3.45s forwards;
+}
+.fanfare-rays {
+  position: absolute;
+  width: 240vmax; height: 240vmax;
+  opacity: .3;
+  background: repeating-conic-gradient(from 0deg,
+    var(--fc) 0 3.5deg, transparent 3.5deg 11deg);
+  animation: rays-spin 16s linear infinite;
+  will-change: transform;
+}
+.fanfare-rays.alt {   /* a counter-spinning gold layer, so no step looks drab */
+  opacity: .3;
+  background: repeating-conic-gradient(from 4deg,
+    var(--pop-yellow) 0 2deg, transparent 2deg 15deg);
+  animation: rays-spin-back 23s linear infinite;
+}
+.fanfare-scrim {
+  position: absolute; inset: 0;
+  background: radial-gradient(circle at 50% 44%,
+    color-mix(in srgb, var(--paper) 93%, transparent) 0 26%,
+    color-mix(in srgb, var(--paper) 78%, transparent) 46%,
+    color-mix(in srgb, var(--paper) 45%, transparent) 100%);
+}
+.fanfare-core {
+  position: relative;
+  text-align: center;
+  padding: 0 18px;
+}
+.fanfare-icon {
+  display: inline-grid; place-items: center;
+  padding: 14px;
+  border-radius: 50%;
+  background: var(--paper-card);
+  border: 4px solid var(--fc);
+  box-shadow: 4px 5px 0 rgba(23,20,15,.4);
+  animation: fanfare-icon 1s cubic-bezier(.16,1.3,.3,1) both;
+}
+.fanfare-icon svg {
+  display: block;
+  width: clamp(58px, 19vw, 96px);
+  height: clamp(58px, 19vw, 96px);
+  fill: none; stroke: var(--fc); stroke-width: 1.9;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+.fanfare-icon svg circle { fill: var(--fc); stroke: none; }
+.fanfare-title {
+  margin-top: 6px;
+  font-family: var(--loud);
+  font-size: clamp(30px, 10.5vw, 62px);
+  line-height: .95;
+  letter-spacing: 2px;
+  color: var(--pop-yellow);
+  text-shadow:
+    2px 0 0 #17140f, -2px 0 0 #17140f, 0 2px 0 #17140f, 0 -2px 0 #17140f,
+    2px 2px 0 #17140f, -2px 2px 0 #17140f, 2px -2px 0 #17140f, -2px -2px 0 #17140f,
+    4px 5px 0 rgba(23,20,15,.5);
+  animation: fanfare-title .9s cubic-bezier(.16,1.4,.3,1) both;
+}
+.fanfare-sub {
+  margin-top: 10px;
+  font-family: var(--hand);
+  font-size: clamp(19px, 5.5vw, 26px);
+  font-weight: 700;
+  color: var(--ink);
+  animation: fanfare-sub .7s ease .35s both;
+}
+@keyframes fanfare-in  { from { opacity: 0; } }
+@keyframes fanfare-out { to   { opacity: 0; } }
+@keyframes rays-spin      { to { transform: rotate(360deg); } }
+@keyframes rays-spin-back { to { transform: rotate(-360deg); } }
+@keyframes fanfare-icon {
+  0%   { opacity: 0; transform: scale(.2) rotate(-30deg); }
+  60%  { opacity: 1; transform: scale(1.15) rotate(6deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0); }
+}
+@keyframes fanfare-title {
+  0%   { opacity: 0; transform: scale(.35) rotate(-8deg); }
+  45%  { opacity: 1; transform: scale(1.16) rotate(3deg); }
+  70%  { transform: scale(.98) rotate(-1deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0); }
+}
+@keyframes fanfare-sub {
+  from { opacity: 0; transform: translateY(10px); }
 }
 
 :focus-visible {

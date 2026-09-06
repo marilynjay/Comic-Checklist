@@ -4,7 +4,7 @@
 
 import {
   TASKS, state, save, addComic, getComic, deleteComic, deletePage,
-  newPage, pageDone, comicStats, storyStats,
+  newPage, pageDone, columnDone, comicStats, storyStats,
   getThumb, putThumb, deleteThumb, shrinkImage,
   exportBackup, importBackup,
 } from './store.js';
@@ -12,14 +12,7 @@ import * as fx from './fx.js';
 
 /* ---------------- task icons ---------------- */
 
-const ICONS = {
-  pencils:     '<path d="M4 20h4L19 9l-4-4L4 16v4z"/><path d="M14 6l4 4"/>',
-  bubbles:     '<path d="M4 5h16v11h-9l-5 4v-4H4V5z"/><path d="M8 10h8"/>',
-  lineart:     '<path d="M3.5 16.5c4 2.5 5.5-7 9-5s3.5 5.5 8 3" stroke-width="2.6"/>',
-  colors:      '<path d="M12 4a8 8 0 10.5 16c1.3 0 1.6-1 .9-1.8-.8-1-.1-2.2 1.2-2.2H16a4 4 0 004-4.2C19.7 7.3 16.3 4 12 4z"/><circle cx="8.5" cy="10" r="1"/><circle cx="12" cy="8" r="1"/><circle cx="15.5" cy="10.5" r="1"/>',
-  backgrounds: '<path d="M3.5 18.5h17"/><path d="M5 18.5l4.5-7 3 4.5 2-3 4.5 5.5"/><circle cx="8" cy="6.5" r="1.6"/>',
-};
-const icon = key => `<svg viewBox="0 0 24 24" aria-hidden="true">${ICONS[key]}</svg>`;
+const icon = task => `<svg viewBox="0 0 24 24" aria-hidden="true">${task.icon}</svg>`;
 
 /* ---------------- element lookup ---------------- */
 
@@ -224,7 +217,7 @@ function pageRow(comic, page, index) {
     b.dataset.task = t.key;
     b.setAttribute('aria-pressed', String(!!page.tasks[t.key]));
     b.setAttribute('aria-label', `${t.label}, page ${index + 1}`);
-    b.innerHTML = icon(t.key);
+    b.innerHTML = icon(t);
     b.addEventListener('click', () => toggleTask(comic, page, t, b, li));
     li.appendChild(b);
   }
@@ -250,19 +243,30 @@ function toggleTask(comic, page, task, btn, row) {
   void btn.offsetWidth;            // restart the stamp animation
   btn.classList.add('just-checked');
 
-  if (nowPageDone && !wasPageDone) {
-    fx.pageComplete(row);
-    const nowComicDone = comicStats(comic).complete;
-    if (nowComicDone && !wasComicDone) {
-      const story = storyStats();
-      const finale = story.comicsDone >= story.slots;
-      setTimeout(() => (finale ? fx.storyComplete() : fx.comicComplete()), 450);
-      setTimeout(() => toast(finale
-        ? 'Every comic finished. The whole story is done!'
-        : `“${comic.title}” is finished!`), 700);
-    }
-  } else {
-    fx.taskChecked(btn, task.tier);
+  // every tap gets its own hit, then any milestone stacks on top
+  fx.taskChecked(btn, task);
+
+  if (nowPageDone && !wasPageDone) setTimeout(() => fx.pageComplete(row), 130);
+
+  const nowComicDone = comicStats(comic).complete;
+  if (nowComicDone && !wasComicDone) {
+    // finishing the comic finishes every column at once, so the comic
+    // celebration stands in for all of them
+    const story = storyStats();
+    const finale = story.comicsDone >= story.slots;
+    setTimeout(() => (finale ? fx.storyComplete() : fx.comicComplete()), 520);
+    setTimeout(() => toast(finale
+      ? 'Every comic finished. The whole story is done!'
+      : `“${comic.title}” is finished!`), 760);
+    return;
+  }
+
+  // all of one step, across every page of this comic
+  if (comic.pages.length > 1 && columnDone(comic, task.key)) {
+    const cells = [...el.pageList.querySelectorAll(`[data-task="${task.key}"]`)];
+    fx.columnComplete(task, comic.title, cells);
+    setTimeout(() => toast(
+      `All ${task.label.toLowerCase()} done for “${comic.title}”!`), 1400);
   }
 }
 

@@ -5,11 +5,37 @@
    ============================================================ */
 
 export const TASKS = [
-  { key: 'pencils',     label: 'Pencils',      short: 'Pencils',      tier: 1, color: 'var(--t-pencils)' },
-  { key: 'bubbles',     label: 'Word bubbles', short: 'Word\nbubbles', tier: 1, color: 'var(--t-bubbles)' },
-  { key: 'lineart',     label: 'Lineart',      short: 'Lineart',      tier: 2, color: 'var(--t-lineart)' },
-  { key: 'colors',      label: 'Colors',       short: 'Colors',       tier: 3, color: 'var(--t-colors)' },
-  { key: 'backgrounds', label: 'Backgrounds',  short: 'Back-\ngrounds', tier: 3, color: 'var(--t-backs)' },
+  {
+    key: 'pencils', label: 'Pencils', short: 'Pencils', tier: 1,
+    color: 'var(--t-pencils)', cssVar: '--t-pencils',
+    // particle colors are picked to read on both the light and dark paper
+    particles: ['#a89e91', '#8a8178', '#c3bab0', '#6f665d'],
+    icon: '<path d="M4 20h4L19 9l-4-4L4 16v4z"/><path d="M14 6l4 4"/>',
+  },
+  {
+    key: 'bubbles', label: 'Word bubbles', short: 'Word\nbubbles', tier: 1,
+    color: 'var(--t-bubbles)', cssVar: '--t-bubbles',
+    particles: ['#5b86b5', '#78a6d6', '#a9c8e8', '#2f6ba8'],
+    icon: '<path d="M4 5h16v11h-9l-5 4v-4H4V5z"/><path d="M8 10h8"/>',
+  },
+  {
+    key: 'lineart', label: 'Lineart', short: 'Lineart', tier: 2,
+    color: 'var(--t-lineart)', cssVar: '--t-lineart',
+    particles: ['#8a8178', '#57504a'],   // the ink color itself is added at runtime
+    icon: '<path d="M3.5 16.5c4 2.5 5.5-7 9-5s3.5 5.5 8 3" stroke-width="2.6"/>',
+  },
+  {
+    key: 'colors', label: 'Colors', short: 'Colors', tier: 3,
+    color: 'var(--t-colors)', cssVar: '--t-colors',
+    particles: ['#e0537d', '#ff5da2', '#ffcf3f', '#3aa0e0', '#2f9e78', '#9b6bd6'],
+    icon: '<path d="M12 4a8 8 0 10.5 16c1.3 0 1.6-1 .9-1.8-.8-1-.1-2.2 1.2-2.2H16a4 4 0 004-4.2C19.7 7.3 16.3 4 12 4z"/><circle cx="8.5" cy="10" r="1"/><circle cx="12" cy="8" r="1"/><circle cx="15.5" cy="10.5" r="1"/>',
+  },
+  {
+    key: 'backgrounds', label: 'Backgrounds', short: 'Back-\ngrounds', tier: 3,
+    color: 'var(--t-backs)', cssVar: '--t-backs',
+    particles: ['#2f9e78', '#7fd6b2', '#3aa0e0', '#ffcf3f'],
+    icon: '<path d="M3.5 18.5h17"/><path d="M5 18.5l4.5-7 3 4.5 2-3 4.5 5.5"/><circle cx="8" cy="6.5" r="1.6"/>',
+  },
 ];
 
 const LS_KEY = 'comic-checklist/v1';
@@ -114,6 +140,11 @@ export async function deletePage(comic, pageId) {
 
 export function pageDone(page) {
   return TASKS.every(t => page.tasks[t.key]);
+}
+
+/** Is every page of this comic done with one particular step? */
+export function columnDone(comic, key) {
+  return comic.pages.length > 0 && comic.pages.every(p => p.tasks[key]);
 }
 
 export function comicStats(comic) {
