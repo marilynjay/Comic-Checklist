@@ -63,6 +63,19 @@ not sync between your phone and your laptop. Use **⋮ → Export backup** now a
 then; it downloads one JSON file containing all progress *and* photos, and
 **Restore from backup** reads it back on any device.
 
+## Installing it on a phone
+
+Open the site in **Safari** on iOS, then **Share → Add to Home Screen**. The
+manifest and Apple meta tags make it launch as its own app — no address bar, no
+browser tabs. (A shortcut added from Chrome on iOS opens inside Chrome instead.)
+
+A service worker caches the app shell, so it opens and works with no signal.
+Your data was never on a server to begin with. Web fonts are the one thing that
+needs a connection; offline the app falls back to system faces.
+
+Bump `CACHE_VERSION` in `sw.js` when the shell changes — the old cache is
+dropped on activate.
+
 ## Running it
 
 It's plain HTML, CSS and JavaScript with no build step and no dependencies.
