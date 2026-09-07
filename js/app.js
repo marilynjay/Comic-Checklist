@@ -5,6 +5,7 @@
 import {
   TASKS, state, save, addComic, getComic, deleteComic, deletePage,
   newPage, pageDone, columnDone, comicStats, storyStats,
+  splitComic, moveComic, comicIndex,
   getThumb, putThumb, deleteThumb, shrinkImage,
   exportBackup, importBackup,
 } from './store.js';
@@ -296,26 +297,59 @@ function openComicDialog(mode) {
   const comic = getComic(openComicId);
   const titleField = $('in-title').closest('.field');
   const pagesField = $('field-pages');
+  const half = comic ? Math.max(1, Math.floor(comic.pages.length / 2)) : 1;
 
   const setup = {
-    create:   { h: 'New comic',        ok: 'Create',  title: true,  pages: true,  pagesLabel: 'How many pages?',        pagesValue: 12 },
-    rename:   { h: 'Rename comic',     ok: 'Save',    title: true,  pages: false },
-    addpages: { h: 'Add pages',        ok: 'Add',     title: false, pages: true,  pagesLabel: 'How many pages to add?', pagesValue: 4 },
-    goal:     { h: 'Story length',     ok: 'Save',    title: false, pages: true,  pagesLabel: 'How many comics in the whole story?', pagesValue: state.storyGoal },
+    create: {
+      h: 'New comic', ok: 'Create',
+      titleLabel: 'Title', titleValue: '',
+      pagesLabel: 'How many pages?', pagesValue: 12,
+      hint: 'You can always add more later.',
+    },
+    rename: {
+      h: 'Rename comic', ok: 'Save',
+      titleLabel: 'Title', titleValue: comic ? comic.title : '',
+    },
+    addpages: {
+      h: 'Add pages', ok: 'Add',
+      pagesLabel: 'How many pages to add?', pagesValue: 4,
+    },
+    goal: {
+      h: 'Story length', ok: 'Save',
+      pagesLabel: 'How many comics in the whole story?', pagesValue: state.storyGoal,
+      hint: 'The story grows on its own if you add more comics than this.',
+    },
+    split: {
+      h: 'Split into two', ok: 'Split',
+      titleLabel: 'Name for the second half',
+      titleValue: comic ? `${comic.title} (part 2)` : '',
+      pagesLabel: comic ? `Split after which page? (1–${comic.pages.length - 1})` : 'Split after which page?',
+      pagesValue: half,
+      hint: 'Later pages move across, keeping their checkmarks and photos.',
+    },
   }[mode];
 
   $('dlg-comic-title').textContent = setup.h;
   $('btn-comic-save').textContent = setup.ok;
-  titleField.hidden = !setup.title;
-  pagesField.hidden = !setup.pages;
-  if (setup.pages) {
+
+  titleField.hidden = !setup.titleLabel;
+  if (setup.titleLabel) {
+    titleField.querySelector('.field-label').textContent = setup.titleLabel;
+    $('in-title').value = setup.titleValue;
+  }
+
+  pagesField.hidden = !setup.pagesLabel;
+  if (setup.pagesLabel) {
     pagesField.querySelector('.field-label').textContent = setup.pagesLabel;
     $('in-pages').value = setup.pagesValue;
-    $('field-pages').querySelector('.field-hint').hidden = mode !== 'create';
   }
-  $('in-title').value = mode === 'rename' && comic ? comic.title : '';
+
+  const hint = pagesField.querySelector('.field-hint');
+  hint.hidden = !setup.hint;
+  if (setup.hint) hint.textContent = setup.hint;
+
   dlgComic.showModal();
-  if (setup.title) setTimeout(() => $('in-title').focus(), 60);
+  if (setup.titleLabel) setTimeout(() => $('in-title').focus(), 60);
 }
 
 $('form-comic').addEventListener('submit', ev => {
@@ -339,6 +373,13 @@ $('form-comic').addEventListener('submit', ev => {
       save();
       renderComic();
       toast(`Added ${plural(count, 'page', 'pages')}.`);
+    }
+  } else if (comicDialogMode === 'split') {
+    const comic = getComic(openComicId);
+    if (comic && comic.pages.length > 1) {
+      const part2 = splitComic(comic, count, title);
+      showHome();
+      toast(`Split — “${part2.title}” has ${plural(part2.pages.length, 'page', 'pages')}.`);
     }
   } else if (comicDialogMode === 'goal') {
     state.storyGoal = count;
@@ -441,6 +482,12 @@ $('btn-comic-menu').addEventListener('click', () => {
   // The same slot flips to an undo, so a mis-tap doesn't mean re-checking
   // every box by hand.
   const done = comicStats(comic).complete;
+  const i = comicIndex(comic.id);
+  const total = state.comics.length;
+  $('comic-position').textContent = `Comic ${i + 1} of ${total} in the story`;
+  $('btn-move-up').hidden = i <= 0;
+  $('btn-move-down').hidden = i < 0 || i >= total - 1;
+  $('btn-split').hidden = comic.pages.length < 2;
   $('btn-mark-all').hidden = comic.pages.length === 0;
   $('mark-all-label').textContent = done ? 'Clear every checkmark' : 'Mark every page finished';
   $('mark-all-hint').textContent = done
@@ -477,6 +524,16 @@ $('btn-mark-all').addEventListener('click', async () => {
 });
 $('btn-comic-menu-close').addEventListener('click', () => dlgComicMenu.close());
 $('btn-rename').addEventListener('click', () => { dlgComicMenu.close(); openComicDialog('rename'); });
+$('btn-split').addEventListener('click', () => { dlgComicMenu.close(); openComicDialog('split'); });
+
+for (const [id, delta] of [['btn-move-up', -1], ['btn-move-down', 1]]) {
+  $(id).addEventListener('click', () => {
+    const comic = getComic(openComicId);
+    if (!comic || !moveComic(comic, delta)) return;
+    dlgComicMenu.close();
+    toast(`Now comic ${comicIndex(comic.id) + 1} of ${state.comics.length}.`);
+  });
+}
 $('btn-add-many').addEventListener('click', () => { dlgComicMenu.close(); openComicDialog('addpages'); });
 $('btn-delete-comic').addEventListener('click', async () => {
   const comic = getComic(openComicId);

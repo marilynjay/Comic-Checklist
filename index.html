@@ -32,7 +32,10 @@
     </div>
     <div class="shelf" id="shelf" role="list" aria-label="Every comic in the story"></div>
     <p class="story-sub" id="story-sub">No comics yet — start your first one.</p>
-    <button class="link-btn" id="btn-story-goal">Story length: <span id="story-goal-text">10 comics</span></button>
+    <button class="chip-btn" id="btn-story-goal">
+      <svg viewBox="0 0 24 24" class="ico"><path d="M4 20h4L19 9l-4-4L4 16v4z"/><path d="M14 6l4 4"/></svg>
+      <span>Story length: <strong id="story-goal-text">10 comics</strong></span>
+    </button>
   </section>
 
   <ul class="comic-list" id="comic-list"></ul>
@@ -127,6 +130,17 @@
 
 <dialog id="dlg-comic-menu" class="sheet">
   <h2 class="sheet-title">Comic options</h2>
+  <p class="sheet-note" id="comic-position">Comic 1 of 10 in the story</p>
+  <div class="menu-row">
+    <button class="menu-item compact" id="btn-move-up">
+      <svg viewBox="0 0 24 24" class="ico"><path d="M12 19V5M6 11l6-6 6 6"/></svg>
+      <span><strong>Move earlier</strong></span>
+    </button>
+    <button class="menu-item compact" id="btn-move-down">
+      <svg viewBox="0 0 24 24" class="ico"><path d="M12 5v14M6 13l6 6 6-6"/></svg>
+      <span><strong>Move later</strong></span>
+    </button>
+  </div>
   <div class="menu-list">
     <button class="menu-item" id="btn-rename">
       <svg viewBox="0 0 24 24" class="ico"><path d="M4 20h4l10-10-4-4L4 16v4zM14 6l4 4"/></svg>
@@ -135,6 +149,10 @@
     <button class="menu-item" id="btn-add-many">
       <svg viewBox="0 0 24 24" class="ico"><path d="M12 5v14M5 12h14"/></svg>
       <span><strong>Add several pages</strong></span>
+    </button>
+    <button class="menu-item" id="btn-split">
+      <svg viewBox="0 0 24 24" class="ico"><path d="M12 3v6M12 15v6"/><path d="M4 12h5M15 12h5"/><path d="M12 12h.01"/></svg>
+      <span><strong>Split into two comics</strong><small>Move the back half into a comic of its own</small></span>
     </button>
     <button class="menu-item" id="btn-mark-all">
       <svg viewBox="0 0 24 24" class="ico"><path d="M2.5 12.5l3.5 3.5 6-7"/><path d="M11 16l2 2 8.5-9.5"/></svg>

@@ -122,6 +122,40 @@ export function getComic(id) {
   return state.comics.find(c => c.id === id) || null;
 }
 
+/**
+ * Break a comic in two. Pages after `afterPage` move to a new comic that
+ * lands directly after this one in the story. Page ids come along
+ * unchanged, so checkmarks and photos follow their pages.
+ */
+export function splitComic(comic, afterPage, newTitle) {
+  const at = Math.max(1, Math.min(comic.pages.length - 1, afterPage));
+  const i = state.comics.indexOf(comic);
+  const part2 = {
+    id: uid(),
+    title: newTitle || `${comic.title} (part 2)`,
+    createdAt: Date.now(),
+    pages: comic.pages.splice(at),
+  };
+  state.comics.splice(i + 1, 0, part2);
+  save();
+  return part2;
+}
+
+/** Shuffle a comic earlier (-1) or later (+1) in the story. */
+export function moveComic(comic, delta) {
+  const i = state.comics.indexOf(comic);
+  const j = i + delta;
+  if (i < 0 || j < 0 || j >= state.comics.length) return false;
+  state.comics.splice(i, 1);
+  state.comics.splice(j, 0, comic);
+  save();
+  return true;
+}
+
+export function comicIndex(id) {
+  return state.comics.findIndex(c => c.id === id);
+}
+
 export async function deleteComic(id) {
   const i = state.comics.findIndex(c => c.id === id);
   if (i < 0) return;

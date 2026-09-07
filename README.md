@@ -7,12 +7,27 @@ whole story, and makes a fuss when you finish something.
 
 ## How it works
 
-- **+** adds a comic. Tell it how many pages you're planning; you can add more
-  any time from the comic's ⋮ menu.
+- **+** adds a comic. Tell it how many pages you're planning.
 - Tap the five boxes on a page row as you finish each step.
 - Tap the page number to attach an optional photo of the page, or to delete it.
-- The bar at the top of the home screen is the whole story: how many comics are
-  finished out of your goal, and how many steps are done overall.
+- The shelf at the top of the home screen is the whole story — one spine per
+  comic you're planning, filling up as each one progresses.
+
+### Reshaping the story
+
+Plans change, so nothing about the structure is fixed:
+
+- **Story length** — the chip under the shelf. The story grows on its own if you
+  add more comics than the number you set.
+- **⋮ → Split into two comics** — pick a page to split after; the later pages
+  move into a new comic that lands right after this one, keeping their
+  checkmarks and photos.
+- **⋮ → Move earlier / Move later** — reorder comics, for when a new one belongs
+  in the middle.
+- **⋮ → Add several pages** for a comic that ran long, or tap a page number to
+  delete one.
+- **⋮ → Mark every page finished** backfills a comic you finished before you
+  started tracking. Once complete, the same button offers to clear it again.
 
 ### The celebrations
 
@@ -20,12 +35,16 @@ They escalate with the effort, so the loud ones stay special:
 
 | What you finished | What happens |
 | --- | --- |
-| Pencils / word bubbles | a quiet puff of graphite dust |
-| Lineart | flicked ink and a halftone ring |
-| Colors / backgrounds | a burst of paint |
+| Pencils / word bubbles | a puff of graphite dust and a shockwave ring |
+| Lineart | flicked ink, a halftone ring and speed lines |
+| Colors / backgrounds | a burst of paint, confetti and spinning stars |
 | A whole page | halftone POP, confetti and a comic-book shout |
+| One step across a whole comic | the column lights up cell by cell, then a few seconds of full-screen sunburst and a confetti storm in that step's colors |
 | A whole comic | full-screen starburst and confetti rain |
 | The final comic of the story | all of that, twice |
+
+Finishing a comic completes all five columns at once, so it shows the comic
+celebration instead of five column fanfares.
 
 Turn them off in **⋮ → Celebrations**. They're also automatically muted if your
 device is set to reduce motion.

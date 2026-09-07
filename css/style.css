@@ -471,6 +471,26 @@ dialog.sheet[open] { animation: sheet-in .2s ease; }
 .btn-danger { background: var(--pop-red); color: #fff; border-color: var(--ink); }
 
 .menu-list { display: grid; gap: 8px; margin-bottom: 12px; }
+.menu-row { display: flex; gap: 8px; margin-bottom: 8px; }
+.menu-row .menu-item { flex: 1 1 0; min-width: 0; justify-content: center; gap: 7px; }
+.menu-item.compact { padding: 10px 8px; }
+.menu-item.compact strong { font-weight: 400; font-size: 16px; }
+.menu-item .ico { width: 22px; height: 22px; }
+
+/* a control that should read as tappable, not as body text */
+.chip-btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  margin-top: 10px;
+  padding: 7px 13px 7px 10px;
+  font: inherit; font-size: 15.5px;
+  color: var(--ink);
+  background: color-mix(in srgb, var(--paper) 70%, transparent);
+  border: 1.5px solid var(--paper-edge);
+  border-radius: 999px;
+  cursor: pointer;
+}
+.chip-btn .ico { width: 17px; height: 17px; color: var(--graphite); }
+.chip-btn:active { background: rgba(128,110,80,.16); }
 .menu-item {
   display: flex; align-items: center; gap: 12px;
   width: 100%; text-align: left;
