@@ -613,6 +613,66 @@ dialog.sheet[open] { animation: sheet-in .2s ease; }
   100% { transform: scale(1); box-shadow: 0 0 0 0 transparent; }
 }
 
+/* the row itself reacting to being finished */
+.page-row.row-pop { animation: row-pop .62s cubic-bezier(.2,1.4,.4,1); }
+@keyframes row-pop {
+  0%   { transform: scale(1); }
+  32%  { transform: scale(1.035);
+         box-shadow: 0 0 0 4px color-mix(in srgb, var(--pop-yellow) 75%, transparent), var(--shadow-md); }
+  100% { transform: scale(1); }
+}
+
+/* ---------- page sticker: the mini celebration ---------- */
+.page-badge {
+  position: fixed;
+  z-index: 53;
+  pointer-events: none;
+  display: grid; place-items: center;
+  animation: pb-in .3s cubic-bezier(.16,1.5,.3,1) both,
+             pb-out .42s ease 1.02s forwards;
+}
+.pb-rays {
+  position: absolute;
+  width: 200px; height: 200px;
+  opacity: .5;
+  background: repeating-conic-gradient(from 0deg,
+    var(--pop-yellow) 0 5deg, transparent 5deg 14deg);
+  animation: rays-spin 9s linear infinite;
+}
+.pb-core {
+  position: relative;
+  display: grid; place-items: center; gap: 1px;
+  padding: 7px 18px 9px;
+  background: var(--paper-card);
+  border: 3px solid var(--ink);
+  border-radius: 12px;
+  box-shadow: 4px 5px 0 rgba(23,20,15,.55);
+  transform: rotate(-4deg);
+}
+.pb-page {
+  font-family: var(--body);
+  font-size: 13px; letter-spacing: 1.4px;
+  color: var(--graphite);
+  line-height: 1;
+}
+.pb-word {
+  font-family: var(--loud);
+  font-size: 32px; letter-spacing: 1.5px;
+  line-height: 1;
+  color: var(--pop-yellow);
+  text-shadow:
+    1.5px 0 0 #17140f, -1.5px 0 0 #17140f, 0 1.5px 0 #17140f, 0 -1.5px 0 #17140f,
+    1.5px 1.5px 0 #17140f, -1.5px 1.5px 0 #17140f, 1.5px -1.5px 0 #17140f, -1.5px -1.5px 0 #17140f;
+}
+@keyframes pb-in {
+  0%   { opacity: 0; transform: translate(-50%, -50%) scale(.3) rotate(-14deg); }
+  60%  { opacity: 1; transform: translate(-50%, -50%) scale(1.14) rotate(3deg); }
+  100% { opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(0); }
+}
+@keyframes pb-out {
+  to { opacity: 0; transform: translate(-50%, -110%) scale(1.04) rotate(0); }
+}
+
 /* ---------- column fanfare: a few seconds of full screen ---------- */
 .fanfare {
   position: fixed; inset: 0;

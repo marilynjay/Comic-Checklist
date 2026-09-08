@@ -209,17 +209,54 @@ export function taskChecked(el, task) {
   }
 }
 
-/** Every task on one page is done. */
-export function pageComplete(el) {
+/**
+ * Every task on one page is done. A mini celebration, anchored to the row
+ * rather than taking over the screen: the row pops, the five boxes ripple
+ * left to right, and a little comic sticker lands on top of it.
+ */
+export function pageComplete(row, pageNumber, cells = [], withSticker = true) {
   if (muted()) return;
-  const { x, y } = centerOf(el);
-  halftone(x, y, '#ffcf3f', 1.6);
-  ring(x, y, '#ff3b30', { size: 300, width: 8, ms: 760 });
-  burst(x, y, { count: 54, colors: POPS, speed: [3, 11],  size: [3, 7], gravity: .24, life: [36, 70], shape: 'rect' });
-  burst(x, y, { count: 24, colors: ['#ffcf3f', '#fff6d0'], speed: [4, 12], size: [3, 8], gravity: .1, life: [24, 42], shape: 'streak' });
-  burst(x, y, { count: 12, colors: POPS, speed: [2, 7], size: [5, 10], gravity: .18, life: [30, 54], shape: 'star' });
-  shout(pick(PAGE_WORDS), Math.min(Math.max(x, 80), innerWidth - 80), y - 34,
-        { size: Math.min(52, innerWidth / 7) });
+  const { x, y } = centerOf(row);
+
+  row.classList.add('row-pop');
+  setTimeout(() => row.classList.remove('row-pop'), 660);
+
+  // a quick wave across the five finished boxes
+  cells.forEach((cell, i) => setTimeout(() => {
+    cell.classList.add('cell-pulse');
+    setTimeout(() => cell.classList.remove('cell-pulse'), 520);
+    const c = centerOf(cell);
+    if (onScreen(c.x, c.y)) {
+      burst(c.x, c.y, { count: 10, colors: POPS, speed: [2, 5.5], size: [2, 4.5], gravity: .18, life: [20, 38] });
+    }
+  }, i * 48));
+
+  halftone(x, y, '#ffcf3f', 1.5);
+  ring(x, y, '#ff3b30', { size: 290, width: 7, ms: 740 });
+  burst(x, y, { count: 38, colors: POPS, speed: [3, 11], size: [3, 7], gravity: .24, life: [36, 70], shape: 'rect' });
+  burst(x, y, { count: 16, colors: ['#ffcf3f', '#fff6d0'], speed: [4, 12], size: [3, 8], gravity: .1, life: [24, 42], shape: 'streak' });
+  burst(x, y, { count: 10, colors: POPS, speed: [2, 7], size: [5, 10], gravity: .18, life: [30, 54], shape: 'star' });
+
+  // skipped when a bigger milestone is about to take the screen anyway
+  if (withSticker) sticker(`PAGE ${pageNumber}`, pick(PAGE_WORDS), x, y);
+}
+
+/** The little rosette that lands on a finished row. */
+function sticker(topLine, bigLine, x, y) {
+  const el = document.createElement('div');
+  el.className = 'page-badge';
+  el.innerHTML = `
+    <div class="pb-rays"></div>
+    <div class="pb-core">
+      <span class="pb-page"></span>
+      <span class="pb-word"></span>
+    </div>`;
+  el.querySelector('.pb-page').textContent = topLine;
+  el.querySelector('.pb-word').textContent = bigLine;
+  el.style.left = Math.min(Math.max(x, 108), innerWidth - 108) + 'px';
+  el.style.top  = Math.min(Math.max(y, 84), innerHeight - 84) + 'px';
+  layer.appendChild(el);
+  setTimeout(() => el.remove(), 1600);
 }
 
 /**
@@ -242,10 +279,20 @@ export function columnComplete(task, comicTitle, cells = []) {
     }
   }, 60 + i * 55));
 
-  // 2. the takeover
-  const wait = 60 + cells.length * 55;
-  setTimeout(() => fanfare(task, comicTitle, colors, accent), Math.min(wait, 520));
+  // 2. the takeover — unless one just ran. Finishing a comic page by page
+  // completes four columns on its last page, and four takeovers in a row
+  // would cut each other off; later ones are acknowledged compactly.
+  const wait = Math.min(60 + cells.length * 55, 520);
+  if (Date.now() - lastFanfareAt < 5000) {
+    setTimeout(() => sticker(`ALL ${task.label.toUpperCase()}`, 'DONE!',
+      innerWidth / 2, innerHeight * 0.42), wait);
+    return;
+  }
+  lastFanfareAt = Date.now();
+  setTimeout(() => fanfare(task, comicTitle, colors, accent), wait);
 }
+
+let lastFanfareAt = 0;
 
 function fanfare(task, comicTitle, colors, accent) {
   // two takeovers at once would just fight each other

@@ -244,13 +244,25 @@ function toggleTask(comic, page, task, btn, row) {
   void btn.offsetWidth;            // restart the stamp animation
   btn.classList.add('just-checked');
 
+  // work out which milestones this tap crossed before firing anything, so a
+  // smaller one can stand aside for a bigger one
+  const comicJustDone = comicStats(comic).complete && !wasComicDone;
+  const columnJustDone = !comicJustDone
+    && comic.pages.length > 1 && columnDone(comic, task.key);
+  const pageJustDone = nowPageDone && !wasPageDone;
+
   // every tap gets its own hit, then any milestone stacks on top
   fx.taskChecked(btn, task);
 
-  if (nowPageDone && !wasPageDone) setTimeout(() => fx.pageComplete(row), 130);
+  if (pageJustDone) {
+    const number = comic.pages.indexOf(page) + 1;
+    const cells = [...row.querySelectorAll('.task-btn')];
+    // the sticker is skipped when the screen is about to be taken over anyway
+    setTimeout(() => fx.pageComplete(row, number, cells,
+      !columnJustDone && !comicJustDone), 130);
+  }
 
-  const nowComicDone = comicStats(comic).complete;
-  if (nowComicDone && !wasComicDone) {
+  if (comicJustDone) {
     // finishing the comic finishes every column at once, so the comic
     // celebration stands in for all of them
     const story = storyStats();
@@ -263,7 +275,7 @@ function toggleTask(comic, page, task, btn, row) {
   }
 
   // all of one step, across every page of this comic
-  if (comic.pages.length > 1 && columnDone(comic, task.key)) {
+  if (columnJustDone) {
     const cells = [...el.pageList.querySelectorAll(`[data-task="${task.key}"]`)];
     fx.columnComplete(task, comic.title, cells);
     setTimeout(() => toast(

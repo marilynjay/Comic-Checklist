@@ -38,13 +38,16 @@ They escalate with the effort, so the loud ones stay special:
 | Pencils / word bubbles | a puff of graphite dust and a shockwave ring |
 | Lineart | flicked ink, a halftone ring and speed lines |
 | Colors / backgrounds | a burst of paint, confetti and spinning stars |
-| A whole page | halftone POP, confetti and a comic-book shout |
+| A whole page | the row pops, its five boxes ripple left to right, and a little "PAGE 4 / POP!" sticker lands on the row |
 | One step across a whole comic | the column lights up cell by cell, then a few seconds of full-screen sunburst and a confetti storm in that step's colors |
 | A whole comic | full-screen starburst and confetti rain |
 | The final comic of the story | all of that, twice |
 
-Finishing a comic completes all five columns at once, so it shows the comic
-celebration instead of five column fanfares.
+Milestones stack, but only one thing ever takes over the screen. Finishing a
+comic completes all five columns at once, so it shows the comic celebration
+instead of five column fanfares; and finishing a comic page by page completes
+four columns on its last page, so the later ones are acknowledged with a compact
+sticker rather than four takeovers in a row.
 
 Turn them off in **⋮ → Celebrations**. They're also automatically muted if your
 device is set to reduce motion.
