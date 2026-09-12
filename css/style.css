@@ -296,9 +296,9 @@ body::before { /* grain */
 .legend-spacer { grid-column: 1; }
 .legend-item {
   text-align: center;
-  font-size: 11px; line-height: 1.15;
+  font-size: clamp(8.5px, 2.6vw, 12px); line-height: 1.15;
   color: var(--graphite);
-  letter-spacing: .2px;
+  letter-spacing: 0;
   overflow-wrap: anywhere;
 }
 
@@ -306,7 +306,7 @@ body::before { /* grain */
 .page-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
 
 .page-row {
-  --pagecol: 74px;
+  --pagecol: 80px;
   display: grid;
   grid-template-columns: var(--pagecol) repeat(5, 1fr);
   gap: 6px;
@@ -322,10 +322,10 @@ body::before { /* grain */
   border-color: var(--t-backs);
   box-shadow: 0 0 0 1.5px color-mix(in srgb, var(--t-backs) 40%, transparent), var(--shadow-sm);
 }
-.legend { --pagecol: 74px; }
+.legend { --pagecol: 80px; }
 
 .page-handle {
-  display: flex; align-items: center; gap: 6px;
+  display: flex; align-items: center; gap: 5px;
   border: none; background: none; padding: 2px; margin: 0;
   font: inherit; color: inherit; cursor: pointer;
   border-radius: 8px;
@@ -335,20 +335,25 @@ body::before { /* grain */
 .page-num {
   font-family: var(--loud); font-size: 19px; letter-spacing: .5px;
   color: var(--graphite);
-  min-width: 26px; text-align: center;
+  min-width: 23px; text-align: center;
 }
 .page-row.complete .page-num { color: var(--t-backs); }
 .page-thumb {
-  width: 36px; height: 36px; flex: none;
-  border-radius: 6px;
+  /* a page shape rather than a square, so a portrait page fills it; `contain`
+     keeps the whole page visible instead of cropping to the middle */
+  width: 44px; height: 54px; flex: none;
+  border-radius: 7px;
   border: 1.5px dashed var(--graphite-2);
-  background-size: cover; background-position: center;
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: var(--paper);
   display: grid; place-items: center;
   color: var(--graphite-2);
   overflow: hidden;
 }
 .page-thumb.has-img { border-style: solid; border-color: var(--ink); }
-.page-thumb svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; }
+.page-thumb svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 2; }
 .page-thumb.has-img svg { display: none; }
 
 /* the five checkboxes */
@@ -780,8 +785,9 @@ dialog.sheet[open] { animation: sheet-in .2s ease; }
 
 /* wider screens: a little breathing room */
 @media (min-width: 560px) {
-  .page-row { --pagecol: 92px; padding: 9px 10px; gap: 8px; }
-  .legend   { --pagecol: 92px; }
+  .page-row { --pagecol: 104px; padding: 9px 10px; gap: 8px; }
+  .legend   { --pagecol: 104px; }
+  .page-thumb { width: 58px; height: 72px; }
   .legend-item { font-size: 12px; }
   .task-btn { height: 48px; }
 }
