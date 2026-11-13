@@ -276,6 +276,41 @@ body::before { /* grain */
   transition: width .45s ease;
 }
 
+.cc-recent {
+  margin: 5px 0 0;
+  font-size: 14px;
+  color: var(--t-backs);
+  display: flex; align-items: center; gap: 5px;
+}
+.cc-recent::before {
+  content: "";
+  width: 7px; height: 7px; flex: none;
+  border-radius: 50%;
+  background: var(--t-backs);
+}
+
+/* ---------- finished comics, folded away ---------- */
+.finished-block { margin-top: 14px; }
+.finished-toggle {
+  display: flex; align-items: center; gap: 7px;
+  width: 100%;
+  padding: 11px 13px;
+  font-family: var(--body); font-size: 16px;
+  color: var(--graphite);
+  background: transparent;
+  border: 1.5px dashed var(--graphite-2);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+.finished-toggle:active { background: rgba(128,110,80,.12); }
+.finished-toggle .chev {
+  width: 19px; height: 19px; flex: none;
+  transition: transform .2s ease;
+}
+.finished-toggle.open .chev { transform: rotate(90deg); }
+.finished-block .comic-list { margin-top: 10px; }
+.finished-block .comic-card { opacity: .82; }
+
 /* ---------- legend ---------- */
 .legend {
   display: grid;

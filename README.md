@@ -11,7 +11,14 @@ whole story, and makes a fuss when you finish something.
 - Tap the five boxes on a page row as you finish each step.
 - Tap the page number to attach an optional photo of the page, or to delete it.
 - The shelf at the top of the home screen is the whole story — one spine per
-  comic you're planning, filling up as each one progresses.
+  comic you're planning, filling up as each one progresses. Spines stay in
+  story order and are tappable, finished ones included.
+- Below it, comics are listed by what you touched most recently, so whatever
+  you're drawing today sits at the top. Finished comics fold away into a
+  "4 finished comics" strip you can open any time; they come back out on their
+  own if you edit one. This is only how the list is sorted — story order itself
+  never changes, which is what the shelf, the spine numbers and **Move earlier /
+  Move later** all work from.
 
 ### Reshaping the story
 

@@ -7,7 +7,7 @@
    dead connection still opens the app.
    ============================================================ */
 
-const CACHE_VERSION = 'v3';
+const CACHE_VERSION = 'v4';
 const CACHE = `comic-checklist-${CACHE_VERSION}`;
 const TIMEOUT = 2500;
 

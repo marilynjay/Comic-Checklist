@@ -4,7 +4,7 @@
 
 import {
   TASKS, state, save, addComic, getComic, deleteComic, deletePage,
-  newPage, pageDone, columnDone, comicStats, storyStats,
+  newPage, pageDone, columnDone, comicStats, storyStats, homeOrder, touch,
   splitComic, moveComic, comicIndex,
   getThumb, putThumb, deleteThumb, shrinkImage,
   exportBackup, importBackup,
@@ -21,6 +21,8 @@ const $ = id => document.getElementById(id);
 const el = {
   home: $('view-home'), comic: $('view-comic'),
   comicList: $('comic-list'), emptyHome: $('empty-home'),
+  finishedBlock: $('finished-block'), finishedList: $('finished-list'),
+  finishedLabel: $('finished-label'), finishedToggle: $('btn-finished'),
   storyPct: $('story-pct'), shelf: $('shelf'),
   storySub: $('story-sub'), storyGoalText: $('story-goal-text'),
   comicTitle: $('comic-title'), comicFill: $('comic-bar-fill'),
@@ -133,30 +135,63 @@ function renderStoryPanel() {
     : `${s.comicsDone} of ${s.slots} comics finished · ${s.done}/${s.total} steps done`;
 }
 
+/** "today", "yesterday", "4 days ago", "12 Sep" */
+function whenTouched(ts) {
+  const day = 86400000;
+  const midnight = new Date(); midnight.setHours(0, 0, 0, 0);
+  const days = Math.floor((midnight.getTime() - ts) / day) + 1;
+  if (ts >= midnight.getTime()) return 'today';
+  if (days <= 1) return 'yesterday';
+  if (days < 7) return `${days} days ago`;
+  return new Date(ts).toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
+}
+
+function comicCard(comic, { recent = false } = {}) {
+  const s = comicStats(comic);
+  const li = document.createElement('li');
+  const card = document.createElement('button');
+  card.className = 'comic-card' + (s.complete ? ' complete' : '');
+  card.type = 'button';
+  card.dataset.comic = comic.id;
+  card.innerHTML = `
+    <div class="cc-top">
+      <h3 class="cc-name"></h3>
+      <span class="cc-badge${s.complete ? ' done' : ''}">${s.complete ? 'DONE' : s.pct + '%'}</span>
+    </div>
+    <p class="cc-meta">${plural(s.pages, 'page', 'pages')} · ${s.pagesDone} finished · ${s.done}/${s.total} steps</p>
+    <div class="cc-bar"><i style="width:${s.pct}%"></i></div>`;
+  card.querySelector('.cc-name').textContent = comic.title;
+  if (recent && comic.touchedAt) {
+    const tag = document.createElement('p');
+    tag.className = 'cc-recent';
+    tag.textContent = `Last worked on ${whenTouched(comic.touchedAt)}`;
+    card.insertBefore(tag, card.querySelector('.cc-meta'));
+  }
+  card.addEventListener('click', () => showComic(comic.id));
+  li.appendChild(card);
+  return li;
+}
+
 function renderHome() {
   renderStoryPanel();
-  el.comicList.innerHTML = '';
   el.emptyHome.hidden = state.comics.length > 0;
 
-  for (const comic of state.comics) {
-    const s = comicStats(comic);
-    const li = document.createElement('li');
-    const card = document.createElement('button');
-    card.className = 'comic-card' + (s.complete ? ' complete' : '');
-    card.type = 'button';
-    card.dataset.comic = comic.id;
-    card.innerHTML = `
-      <div class="cc-top">
-        <h3 class="cc-name"></h3>
-        <span class="cc-badge${s.complete ? ' done' : ''}">${s.complete ? 'DONE' : s.pct + '%'}</span>
-      </div>
-      <p class="cc-meta">${plural(s.pages, 'page', 'pages')} · ${s.pagesDone} finished · ${s.done}/${s.total} steps</p>
-      <div class="cc-bar"><i style="width:${s.pct}%"></i></div>`;
-    card.querySelector('.cc-name').textContent = comic.title;
-    card.addEventListener('click', () => showComic(comic.id));
-    li.appendChild(card);
-    el.comicList.appendChild(li);
-  }
+  const { active, finished } = homeOrder();
+
+  el.comicList.innerHTML = '';
+  active.forEach((comic, i) =>
+    el.comicList.appendChild(comicCard(comic, { recent: i === 0 })));
+
+  // finished comics are kept out of the way, but one tap from view
+  el.finishedBlock.hidden = finished.length === 0;
+  const open = state.showFinished || active.length === 0;
+  el.finishedLabel.textContent =
+    `${finished.length} finished ${finished.length === 1 ? 'comic' : 'comics'}`;
+  el.finishedToggle.setAttribute('aria-expanded', String(open));
+  el.finishedToggle.classList.toggle('open', open);
+  el.finishedList.hidden = !open;
+  el.finishedList.innerHTML = '';
+  if (open) finished.forEach(comic => el.finishedList.appendChild(comicCard(comic)));
 }
 
 /* ---------------- comic view ---------------- */
@@ -232,7 +267,7 @@ function toggleTask(comic, page, task, btn, row) {
   page.tasks[task.key] = !page.tasks[task.key];
   const on = page.tasks[task.key];
   btn.setAttribute('aria-pressed', String(on));
-  save();
+  touch(comic);
 
   const nowPageDone = pageDone(page);
   row.classList.toggle('complete', nowPageDone);
@@ -377,12 +412,12 @@ $('form-comic').addEventListener('submit', ev => {
     setTimeout(() => showComic(comic.id), 0);
   } else if (comicDialogMode === 'rename') {
     const comic = getComic(openComicId);
-    if (comic && title) { comic.title = title; save(); el.comicTitle.textContent = title; }
+    if (comic && title) { comic.title = title; touch(comic); el.comicTitle.textContent = title; }
   } else if (comicDialogMode === 'addpages') {
     const comic = getComic(openComicId);
     if (comic) {
       for (let i = 0; i < count; i++) comic.pages.push(newPage());
-      save();
+      touch(comic);
       renderComic();
       toast(`Added ${plural(count, 'page', 'pages')}.`);
     }
@@ -447,7 +482,7 @@ $('in-image').addEventListener('change', async ev => {
     const data = await shrinkImage(file);
     await putThumb(page.id, data);
     page.hasImage = true;
-    save();
+    touch(comic);
     dlgPage.close();
     renderComic();
     toast('Photo added.');
@@ -463,7 +498,7 @@ $('btn-remove-image').addEventListener('click', async () => {
   if (!page) return;
   await deleteThumb(page.id).catch(() => {});
   page.hasImage = false;
-  save();
+  touch(comic);
   dlgPage.close();
   renderComic();
 });
@@ -527,7 +562,7 @@ $('btn-mark-all').addEventListener('click', async () => {
   for (const page of comic.pages) {
     for (const t of TASKS) page.tasks[t.key] = !done;
   }
-  save();
+  touch(comic);
   renderComic();
   if (!done) {
     fx.comicComplete();
@@ -610,6 +645,12 @@ $('btn-motion').addEventListener('click', () => {
 });
 
 /* ---------------- top-level buttons ---------------- */
+
+$('btn-finished').addEventListener('click', () => {
+  state.showFinished = !state.showFinished;
+  save();
+  renderHome();
+});
 
 $('btn-add-comic').addEventListener('click', () => openComicDialog('create'));
 $('btn-back').addEventListener('click', showHome);

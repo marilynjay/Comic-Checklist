@@ -49,6 +49,14 @@
 
   <ul class="comic-list" id="comic-list"></ul>
 
+  <div class="finished-block" id="finished-block" hidden>
+    <button class="finished-toggle" id="btn-finished" aria-expanded="false" aria-controls="finished-list">
+      <svg viewBox="0 0 24 24" class="ico chev"><path d="M9 6l6 6-6 6"/></svg>
+      <span id="finished-label">Finished</span>
+    </button>
+    <ul class="comic-list" id="finished-list" hidden></ul>
+  </div>
+
   <div class="blank-state" id="empty-home" hidden>
     <div class="empty-art" aria-hidden="true">
       <svg viewBox="0 0 120 90"><rect x="8" y="8" width="104" height="74" rx="4"/><path d="M8 26h104M40 26v56M76 26v56"/></svg>

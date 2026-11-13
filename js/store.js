@@ -45,7 +45,11 @@ const DB_STORE = 'thumbs';
 /* ---------------- state ---------------- */
 
 function blank() {
-  return { version: 1, storyGoal: 10, celebrations: true, comics: [] };
+  return {
+    version: 1, storyGoal: 10, celebrations: true,
+    showFinished: false,     // whether the finished shelf is expanded on the home screen
+    comics: [],
+  };
 }
 
 export const state = load();
@@ -68,6 +72,7 @@ function migrate(data) {
     id: c.id || uid(),
     title: typeof c.title === 'string' ? c.title : 'Untitled comic',
     createdAt: c.createdAt || Date.now(),
+    touchedAt: typeof c.touchedAt === 'number' ? c.touchedAt : 0,
     pages: (Array.isArray(c.pages) ? c.pages : []).map(p => {
       const tasks = {};
       for (const t of TASKS) tasks[t.key] = !!(p.tasks && p.tasks[t.key]);
@@ -111,6 +116,7 @@ export function addComic(title, pageCount) {
     id: uid(),
     title: title || 'Untitled comic',
     createdAt: Date.now(),
+    touchedAt: Date.now(),      // a comic you just made is the one you're on
     pages: Array.from({ length: pageCount }, newPage),
   };
   state.comics.push(comic);
@@ -134,9 +140,11 @@ export function splitComic(comic, afterPage, newTitle) {
     id: uid(),
     title: newTitle || `${comic.title} (part 2)`,
     createdAt: Date.now(),
+    touchedAt: 0,
     pages: comic.pages.splice(at),
   };
   state.comics.splice(i + 1, 0, part2);
+  comic.touchedAt = part2.touchedAt = Date.now();
   save();
   return part2;
 }
@@ -168,12 +176,37 @@ export async function deletePage(comic, pageId) {
   const i = comic.pages.findIndex(p => p.id === pageId);
   if (i < 0) return;
   comic.pages.splice(i, 1);
-  save();
+  touch(comic);
   await deleteThumb(pageId).catch(() => {});
 }
 
 export function pageDone(page) {
   return TASKS.every(t => page.tasks[t.key]);
+}
+
+/** Mark a comic as the one being worked on, and save. */
+export function touch(comic) {
+  if (comic) comic.touchedAt = Date.now();
+  save();
+}
+
+/**
+ * How the home screen lists comics: whatever you touched most recently
+ * first, then the untouched ones in story order, with finished comics kept
+ * separately so they stop clogging the list. Story order itself — the shelf,
+ * the spine numbers, move earlier/later — is untouched by any of this.
+ */
+export function homeOrder() {
+  const active = [], finished = [];
+  state.comics.forEach((comic, order) => {
+    (comicStats(comic).complete ? finished : active).push({ comic, order });
+  });
+  active.sort((a, b) =>
+    (b.comic.touchedAt - a.comic.touchedAt) || (a.order - b.order));
+  return {
+    active: active.map(e => e.comic),
+    finished: finished.map(e => e.comic),
+  };
 }
 
 /** Is every page of this comic done with one particular step? */
